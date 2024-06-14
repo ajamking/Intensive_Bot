@@ -1,0 +1,8 @@
+{
+  "BotToken": "7460561130:AAEGBRCazYMjzNrFKxoZKxzWRmIPytMcwKs",
+  "AdminUsername": "godfather98",
+  "AclFilePath": "./EnvironmentFiles/AclFile.json",
+  "LogFilePath": "./EnvironmentFiles/LogFile.txt",
+  "ExceptionLogFilePath": "./EnvironmentFiles/ExceptionLogFile.txt",
+  "GitLabLink": ""
+}
