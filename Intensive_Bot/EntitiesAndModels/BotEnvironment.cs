@@ -7,5 +7,5 @@ public class BotEnvironment
     public string AclFilePath { get; set; }
     public string LogFilePath { get; set; }
     public string ExceptionLogFilePath { get; set; }
-    public string GitLabLink { get; set; }
+    public string GitLabAuthToken { get; set; }
 }

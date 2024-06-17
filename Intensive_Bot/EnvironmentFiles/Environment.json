@@ -4,5 +4,5 @@
   "AclFilePath": "./EnvironmentFiles/AclFile.json",
   "LogFilePath": "./EnvironmentFiles/LogFile.txt",
   "ExceptionLogFilePath": "./EnvironmentFiles/ExceptionLogFile.txt",
-  "GitLabLink": ""
+  "GitLabAuthToken": "glpat-RiERFtxJzNdzcWSp9xyS"
 }

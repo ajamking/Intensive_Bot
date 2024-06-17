@@ -4,84 +4,96 @@ using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
-using Intensive_Bot.BackgroundTasks;
 using Newtonsoft.Json;
 using Intensive_Bot.Entities;
 using Microsoft.Extensions.Hosting;
+using Intensive_Bot.API;
+using Intensive_Bot.BLFunctions;
+using Intensive_Bot.EntitiesAndModels;
+using Exceptions;
 
 namespace Intensive_Bot;
 
 class Program
 {
-    public static readonly BotEnvironment BotEnvironment = JsonConvert.DeserializeObject<BotEnvironment>(System.IO.File.ReadAllText("Environment.json"));
+    public static BotEnvironment BotEnvironment { get; private set; }
 
-    public static TelegramBotClient BotClient { get; } = new(token: BotEnvironment.BotToken);
+    public static TelegramBotClient BotClient { get; private set; }
 
     static void Main(string[] args)
     {
-        BotBackgroundManager.StartAstync(BotClient);
-        BotClient.StartReceiving(HandleUpdateAsync, HandleError);
+        try
+        {
+            BotEnvironment = JsonConvert.DeserializeObject<BotEnvironment>(System.IO.File.ReadAllText("./EnvironmentFiles/Environment.json"));
 
-        Console.OutputEncoding = Encoding.UTF8;
-        CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("ru-RU");
-        Console.WriteLine("Bot started");
+            BotClient = new(token: BotEnvironment.BotToken);
 
-        var host = new HostBuilder()
-         .ConfigureHostConfiguration(h => { })
-         .UseConsoleLifetime()
-         .Build();
-        host.Run();
+            BotBackgroundManager.StartAstync(BotClient);
+
+            BotClient.StartReceiving(HandleUpdateAsync, HandleError);
+
+            Console.OutputEncoding = Encoding.UTF8;
+            CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("ru-RU");
+            Console.WriteLine("Bot started");
+
+            var result = ApiRequestBuilder.CallApi(ApiRequestType.AssignedToMeMergeRequests).Result;
+
+            var res = JsonConvert.DeserializeObject<List<MergeRequestInfoUI>>(result);
+
+            var date = DateTime.Parse(res.FirstOrDefault().UpdatedAt);
+
+            var host = new HostBuilder()
+             .ConfigureHostConfiguration(h => { })
+             .UseConsoleLifetime()
+             .Build();
+            host.Run();
+        }
+        catch (Exception ex)
+        {
+            BotLogger.LogException(ex);
+
+            throw new UnknownException(ex.Message, ex);
+        }
     }
 
     async static Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
     {
         try
         {
-            if (update.Type == UpdateType.Message && update?.Message?.Text != null)
+            if (update.Type != UpdateType.Message || update?.Message?.Text == null)
+                return;
+
+            if (update.Message.Chat.Type is ChatType.Channel or ChatType.Group or ChatType.Supergroup)
+                return;
+
+            if (string.IsNullOrEmpty(update.Message.Chat.Username) || update.Message.Chat.Username != BotEnvironment.AdminUsername)
             {
-                if (false)
-                {
-                    return;
-                }
-
-                if (update.Message.Chat.Type is ChatType.Channel or ChatType.Group or ChatType.Supergroup)
-                {
-                    return;
-                }
-
-                Console.Write($"{DateTime.Now}: Принято сообщение: \"{update.Message.Text}\" от ");
-
-                Console.ForegroundColor = ConsoleColor.Magenta;
-
-                Console.WriteLine($"@{update.Message.Chat.Username}");
-
-                Console.ResetColor();
-
-                await Task.Run(() => Navigation.Execute(botClient, update.Message));
-
+                await botClient.SendTextMessageAsync(update.Message.Chat.Id,
+                          text: "Бот предназначен для частного использования, неавторизованные пользователи не имеют доступа к его функционалу.");
                 return;
             }
-        }
-        catch (Exception e)
-        {
-            e.LogException(update.Message.Chat.Username, update.Message.Chat.Id, update.Message.Text, "Проигнорировали исключение в HandleUpdateAsync");
 
-            Console.WriteLine("Проигнорировали исключение " + e.Message + "в чате " + update.Message);
+            await Task.Run(() => Navigator.Execute(botClient, update.Message));
+
+            return;
+
+        }
+        catch (Exception ex)
+        {
+            ex.LogException($"Исключение проигнорировано");
         }
     }
 
-    static Task HandleError(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
+    static Task HandleError(ITelegramBotClient botClient, Exception ex, CancellationToken cancellationToken)
     {
-        Console.WriteLine($"Прилетело исключение {exception.Message}");
-
-        var errorMessage = exception switch
+        var errorMessage = ex switch
         {
             ApiRequestException apiRequestException =>
             $"Ошбика телеграм API:\n{apiRequestException.ErrorCode}\n{apiRequestException.Message}",
-            _ => exception.ToString()
+            _ => ex.ToString()
         };
 
-        Console.WriteLine(errorMessage);
+        ex.LogException($"Исключение проигнорировано: {errorMessage}");
 
         return Task.CompletedTask;
     }

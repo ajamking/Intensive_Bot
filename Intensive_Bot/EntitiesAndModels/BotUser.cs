@@ -8,9 +8,13 @@ public class BotUser
     public long ChatId { get; set; }
     public string? Username { get; set; }
     public string? FirstName { get; set; }
+
     public ITelegramBotClient BotClient { get; set; }
     public Message Message { get; set; }
 
+    public int AlertFrequency { get; set; } = 0;
+    public bool AlertsOn { get; set; } = false;
+    
     public BotUser(ITelegramBotClient botClient, Message message)
     {
         ChatId = message.Chat.Id;
