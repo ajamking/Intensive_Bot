@@ -1,6 +1,7 @@
 ﻿using Exceptions;
 using Intensive_Bot.BLFunctions;
 using Intensive_Bot.Entities;
+using Intensive_Bot.EntitiesAndModels;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 
@@ -8,19 +9,19 @@ namespace Intensive_Bot;
 
 public static class Navigator
 {
-    private static readonly List<BotUser> _botUsers = new();
-
     private static readonly Func<BotUser, bool>[] _handlers = new[]
     {
         HandleKeyboardWordMessage,
         HandleAnyUnknownMessage,
     };
 
+    public static readonly List<BotUser> BotUsers = new();
+
     public static void Execute(ITelegramBotClient botClient, Message message)
     {
         TryAddBotUser(botClient, message);
 
-        var activeBotUser = _botUsers.First(x => x.ChatId == message.Chat.Id);
+        var activeBotUser = BotUsers.First(x => x.ChatId == message.Chat.Id);
 
         ResetBotUsersMessage(activeBotUser, message);
 
@@ -53,12 +54,22 @@ public static class Navigator
             {
                 case var text when text == AnswerSender.KeyboardWordsDic[KeyboardWords.ShowAllMR]:
                     {
-                        AnswerSender.SendMessage(botUser, KeyboardFunctions.GetAllActiveMergeRequests());
+                        var answer = BeautyHelper.MakeItStyled($"Все ваши активные Merge Request-ы\n", UiTextStyle.Header);
+
+                        answer += BotFunctions.GetAllActiveMergeRequests().MakeMrResponseBeautier();
+
+                        AnswerSender.SendMessage(botUser, answer);
+
                         break;
                     }
                 case var text when text == AnswerSender.KeyboardWordsDic[KeyboardWords.ShowMyMR]:
                     {
-                        AnswerSender.SendMessage(botUser, KeyboardFunctions.GetAllAttachedToMeMergeRequests());
+                        var answer = BeautyHelper.MakeItStyled($"Все закрепленные за вами активные Merge Request-ы\n", UiTextStyle.Header);
+
+                        answer += BotFunctions.GetAllAttachedToMeMergeRequests().MakeMrResponseBeautier();
+
+                        AnswerSender.SendMessage(botUser, answer);
+
                         break;
                     }
                 case var text when text == AnswerSender.KeyboardWordsDic[KeyboardWords.CustomizeNotification]:
@@ -68,7 +79,10 @@ public static class Navigator
                     }
                 case var text when text == AnswerSender.KeyboardWordsDic[KeyboardWords.SwitchNotification]:
                     {
-                        AnswerSender.SendMessage(botUser, KeyboardFunctions.SwitchNotifications(botUser));
+                        var answer = BotFunctions.SwitchNotifications(botUser) ? "Регулярные оповещения включены! ✅" : "Регулярные оповещения отключены! 🔴";
+
+                        AnswerSender.SendMessage(botUser, answer);
+
                         break;
                     }
                 case var text when text == AnswerSender.KeyboardWordsDic[KeyboardWords.AboutInfo]:
@@ -104,9 +118,9 @@ public static class Navigator
 
     private static void TryAddBotUser(ITelegramBotClient telegramBotClient, Message message)
     {
-        if (!_botUsers.Any(x => x.ChatId == message.Chat.Id))
+        if (!BotUsers.Any(x => x.ChatId == message.Chat.Id))
         {
-            _botUsers.Add(new BotUser(telegramBotClient, message));
+            BotUsers.Add(new BotUser(telegramBotClient, message));
         }
     }
 

@@ -64,6 +64,14 @@ public static class BotLogger
         WriteLogToFile(logString.ToString(), LogEventLevel.Error);
     }
 
+    public static void LogSystemProcess(string extraMessage)
+    {
+        var logString = $"Лог системного процесса: {extraMessage}";
+
+        _consoleLogger.Information(logString);
+        WriteLogToFile(logString, LogEventLevel.Information);
+    }
+
     private static void WriteLogToFile(string str, LogEventLevel logEventLevel)
     {
         Log.Logger = new LoggerConfiguration()

@@ -9,7 +9,9 @@ namespace Intensive_Bot;
 
 public static class AnswerSender
 {
-    private static ReplyKeyboardMarkup _keyboard { get; }
+    private static ReplyKeyboardMarkup _keyboard;
+
+    private static int _maxMessageLength = 4000;
 
     public static Dictionary<KeyboardWords, string> KeyboardWordsDic { get; private set; } = new()
     {
@@ -38,7 +40,7 @@ public static class AnswerSender
             if (CheckMessageHaveValidLength(message))
             {
                 await botUser.BotClient.SendTextMessageAsync(botUser.Message.Chat.Id,
-                      text: message,
+                      text: message.Replace(BeautyHelper.DividerToken, ""),
                       parseMode: ParseMode.MarkdownV2);
             }
             else
@@ -75,7 +77,7 @@ public static class AnswerSender
         }
     }
 
-    private static bool CheckMessageHaveValidLength(string message) => message.Length > 4000 ? false : true;
+    private static bool CheckMessageHaveValidLength(string message) => message.Length > _maxMessageLength ? false : true;
 }
 
 public enum KeyboardWords

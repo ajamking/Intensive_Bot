@@ -12,7 +12,7 @@ public class BotUser
     public ITelegramBotClient BotClient { get; set; }
     public Message Message { get; set; }
 
-    public int AlertFrequency { get; set; } = 0;
+    public int AlertFrequencyMinutes { get; set; } = 0;
     public bool AlertsOn { get; set; } = false;
     
     public BotUser(ITelegramBotClient botClient, Message message)
