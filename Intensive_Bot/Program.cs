@@ -28,30 +28,23 @@ class Program
 
             BotClient = new(token: BotEnvironment.BotToken);
 
-            BotBackgroundManager.StartAstync(BotClient);
+            BotBackgroundManager.StartAsync(BotClient);
 
             BotClient.StartReceiving(HandleUpdateAsync, HandleError);
 
-            Console.OutputEncoding = Encoding.UTF8;
-            CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("ru-RU");
-            Console.WriteLine("Bot started");
-
-            var result = ApiRequestBuilder.CallApi(ApiRequestType.AssignedToMeMergeRequests).Result;
-
-            var res = JsonConvert.DeserializeObject<List<MergeRequestInfoUI>>(result);
-
-            var date = DateTime.Parse(res.FirstOrDefault().UpdatedAt);
+            BotLogger.LogSystemProcess("Бот запущен!");
 
             var host = new HostBuilder()
-             .ConfigureHostConfiguration(h => { })
-             .UseConsoleLifetime()
-             .Build();
+                .ConfigureHostConfiguration(h => { })
+                .UseConsoleLifetime()
+                .Build();
+
             host.Run();
         }
         catch (Exception ex)
         {
             BotLogger.LogException(ex);
-
+            BotLogger.LogSystemProcess("Бот аварийно завершил работу!");
             throw new UnknownException(ex.Message, ex);
         }
     }
@@ -97,5 +90,4 @@ class Program
 
         return Task.CompletedTask;
     }
-
 }

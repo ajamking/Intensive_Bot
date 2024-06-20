@@ -42,6 +42,45 @@ public class MergeRequestInfoUI
 
     [JsonProperty("web_url")]
     public string WebUrl { get; set; }
+
+    public override bool Equals(object? obj)
+    {
+        return Equals(obj as MergeRequestInfoUI);
+    }
+
+    public bool Equals(MergeRequestInfoUI? mr)
+    {
+        return mr is MergeRequestInfoUI uI &&
+               ProjectId == uI.ProjectId &&
+               Description == uI.Description &&
+               State == uI.State &&
+               CreatedAt == uI.CreatedAt &&
+               UpdatedAt == uI.UpdatedAt &&
+               TargetBranch == uI.TargetBranch &&
+               SourceBranch == uI.SourceBranch &&
+               
+               MergeStatus == uI.MergeStatus &&
+               WebUrl == uI.WebUrl;
+    }
+
+    public override int GetHashCode()
+    {
+        HashCode hash = new HashCode();
+        hash.Add(ProjectId);
+        hash.Add(Description);
+        hash.Add(State);
+        hash.Add(CreatedAt);
+        hash.Add(UpdatedAt);
+        hash.Add(TargetBranch);
+        hash.Add(SourceBranch);
+        hash.Add(Author);
+        hash.Add(Assignees);
+        hash.Add(Assignee);
+        hash.Add(Reviewers);
+        hash.Add(MergeStatus);
+        hash.Add(WebUrl);
+        return hash.ToHashCode();
+    }
 }
 
 public class WorkgroupMember

@@ -16,7 +16,7 @@ public static class BotLogger
            .CreateLogger();
     }
 
-    public static void LogRequest(BotUser botUser)
+    public static void LogUserMessage(BotUser botUser)
     {
         var logString = $"Получено сообщение от пользователя {botUser.Username} ({botUser.FirstName}) [{botUser.ChatId}]\n" +
             $"Текст сообщения: {botUser.Message.Text}";
@@ -58,7 +58,7 @@ public static class BotLogger
             logString.AppendLine($"Сопроводительное сообщение: {extraMessage}");
         }
 
-        logString.AppendLine($"Стактрейс: {ex?.StackTrace}");
+        logString.AppendLine($"Стектрейс: {ex?.StackTrace}");
 
         _consoleLogger.Error(logString.ToString());
         WriteLogToFile(logString.ToString(), LogEventLevel.Error);
@@ -75,15 +75,12 @@ public static class BotLogger
     private static void WriteLogToFile(string str, LogEventLevel logEventLevel)
     {
         Log.Logger = new LoggerConfiguration()
-
          .WriteTo.Logger(l => l
              .Filter.ByIncludingOnly(e => e.Level == LogEventLevel.Information)
              .WriteTo.File(path: Program.BotEnvironment.LogFilePath))
-
          .WriteTo.Logger(l => l
              .Filter.ByIncludingOnly(e => e.Level == LogEventLevel.Error)
              .WriteTo.File(path: Program.BotEnvironment.ExceptionLogFilePath))
-
          .CreateLogger();
 
         switch (logEventLevel)

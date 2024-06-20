@@ -10,11 +10,16 @@ public static class BotBackgroundManager
 {
     private static List<MergeRequestInfoUI> _previousAdminsMergeRequests = new List<MergeRequestInfoUI>();
 
-    private static BotUser _admin;
-
-    public static async Task StartAstync(ITelegramBotClient botClient)
+    public static async Task StartAsync(ITelegramBotClient botClient)
     {
-        RunAdminsBgTasks(botClient);
+        try
+        {
+           await RunAdminsBgTasks(botClient);
+        }
+        catch (Exception ex)
+        {
+            BotLogger.LogException(ex, "Из-за ошибки фоновые задачи были остановлены.");
+        }
     }
 
     private static async Task RunAdminsBgTasks(ITelegramBotClient botClient)
@@ -33,14 +38,14 @@ public static class BotBackgroundManager
 
             BotLogger.LogSystemProcess("Подключение к интернету присутствует.");
 
-            var _admin = Navigator.BotUsers.FirstOrDefault(x => x.Username == Program.BotEnvironment.AdminUsername);
+            var admin = Navigator.BotUsers.FirstOrDefault(x => x.Value.IsAdmin).Value;
 
-            if (_admin != null && _admin.AlertsOn && _admin.AlertFrequencyMinutes != 0)
+            if (admin != null && admin.NotificationEnabled && admin.NotificationFrequencyMinutes != 0)
             {
-                SendAlertToAdmin();
+                SendAlertToAdmin(admin);
                 BotLogger.LogSystemProcess("Рассылка для администратора отработала корректно.");
 
-                await Task.Delay(TimeSpan.FromMinutes(_admin.AlertFrequencyMinutes));
+                await Task.Delay(TimeSpan.FromMinutes(admin.NotificationFrequencyMinutes));
             }
             else
             {
@@ -49,23 +54,23 @@ public static class BotBackgroundManager
         }
     }
 
-    private static void SendAlertToAdmin()
+    private static void SendAlertToAdmin(BotUser admin)
     {
         if (CheckAdminsMergeRequestUpdates())
         {
-            var answer = new StringBuilder(BeautyHelper.MakeItStyled($"Обнаружены новые MergeRequest-ы! Ознакомьтесь:\n", UiTextStyle.Header));
+            var answer = new StringBuilder(BeautyHelper.MakeItStyled($"Обнаружены новые MergeRequest-ы!\nОзнакомьтесь:\n\n", UiTextStyle.Header));
 
-            answer.AppendLine(BeautyHelper.MakeItStyled($"Все ваши активные Merge Request-ы\n", UiTextStyle.Header));
+            answer.AppendLine(BeautyHelper.MakeItStyled($"Все ваши активные Merge Request-ы:\n", UiTextStyle.Default));
             answer.AppendLine(BotFunctions.GetAllActiveMergeRequests().MakeMrResponseBeautier());
 
-            answer.AppendLine(BeautyHelper.MakeItStyled($"Все закрепленные за вами активные Merge Request-ы\n", UiTextStyle.Header));
+            answer.AppendLine(BeautyHelper.MakeItStyled($"Все закрепленные за вами активные Merge Request-ы:\n", UiTextStyle.Default));
             answer.AppendLine(BotFunctions.GetAllAttachedToMeMergeRequests().MakeMrResponseBeautier());
 
-            AnswerSender.SendMessage(_admin, answer.ToString());
+            AnswerSender.SendMessage(admin, answer.ToString());
         }
         else
         {
-            AnswerSender.SendMessage(_admin, BeautyHelper.MakeItStyled($"Новых MergeRequest-ов не обнаружено.", UiTextStyle.Default));
+            AnswerSender.SendMessage(admin, BeautyHelper.MakeItStyled($"Новых или обновленных MergeRequest-ов не обнаружено.", UiTextStyle.Default));
         }
     }
 
@@ -75,7 +80,7 @@ public static class BotBackgroundManager
 
         newMergeRequests.AddRange(BotFunctions.GetAllAttachedToMeMergeRequests());
 
-        if (_previousAdminsMergeRequests != newMergeRequests)
+        if (!_previousAdminsMergeRequests.SequenceEqual(newMergeRequests))
         {
             _previousAdminsMergeRequests = newMergeRequests;
 

@@ -5,7 +5,7 @@ namespace Intensive_Bot.BLFunctions;
 
 public static class BeautyHelper
 {
-    private static string _beautydivider = "• • • • • • • • • • •";
+    public static string Beautydivider = "• • • • • • • • • • •";
 
     public static string DividerToken = "DividerToken";
 
@@ -19,20 +19,20 @@ public static class BeautyHelper
         {
             answer.AppendLine(MakeItStyled($"ID проекта: {mr.ProjectId}", UiTextStyle.Default));
             answer.AppendLine(MakeItStyled($"Описание: {mr.Description}", UiTextStyle.Subtitle));
-            answer.AppendLine(_beautydivider);
+            answer.AppendLine(Beautydivider);
             answer.AppendLine(MakeItStyled($"Cоздан: {mr.CreatedAt.ChangeToUiDateTime()}", UiTextStyle.Default));
             answer.AppendLine(MakeItStyled($"Обновлен: {mr.UpdatedAt.ChangeToUiDateTime()}", UiTextStyle.Default));
             answer.AppendLine(MakeItStyled($"Статус: {mr.State}", UiTextStyle.Default));
             answer.AppendLine(MakeItStyled($"Статус cлияния: {mr.MergeStatus}", UiTextStyle.Name));
-            answer.AppendLine(_beautydivider);
+            answer.AppendLine(Beautydivider);
             answer.AppendLine(MakeItStyled($"Целевая ветка: {mr.TargetBranch}", UiTextStyle.Subtitle));
             answer.AppendLine(MakeItStyled($"Исходная ветка: {mr.SourceBranch}", UiTextStyle.Subtitle));
-            answer.AppendLine(_beautydivider);
+            answer.AppendLine(Beautydivider);
             answer.AppendLine(MakeItStyled($"Автор: {mr.Author.Name}-{mr.Author.Username}", UiTextStyle.Name));
             answer.AppendLine(MakeItStyled($"Закреплены: {string.Join("; ", mr.Assignees.Select(a => $"{a.Name}-{a.Username}"))}", UiTextStyle.Name));
             answer.AppendLine(MakeItStyled($"Назначен: {mr.Assignee}", UiTextStyle.Name));
             answer.AppendLine(MakeItStyled($"Рецензенты: {string.Join("; ", mr.Reviewers.Select(r => $"{r.Name}-{r.Username}"))}", UiTextStyle.Name));
-            answer.AppendLine(_beautydivider);
+            answer.AppendLine(Beautydivider);
             answer.AppendLine(MakeItStyled($"Ссылка на MR: {mr.WebUrl}", UiTextStyle.Default));
 
             count++;

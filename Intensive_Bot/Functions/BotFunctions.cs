@@ -9,7 +9,7 @@ public static class BotFunctions
 {
     public static List<MergeRequestInfoUI> GetAllActiveMergeRequests()
     {
-        var apiReply = ApiRequestBuilder.CallApi(ApiRequestType.MyOpenedMergreRequests).Result;
+        var apiReply = GitlabClient.CallApi(ApiRequestType.MyOpenedMergreRequests).Result;
 
         var mergeRequests = JsonConvert.DeserializeObject<List<MergeRequestInfoUI>>(apiReply);
 
@@ -18,24 +18,25 @@ public static class BotFunctions
 
     public static List<MergeRequestInfoUI> GetAllAttachedToMeMergeRequests()
     {
-        var apiReply = ApiRequestBuilder.CallApi(ApiRequestType.AssignedToMeMergeRequests).Result;
+        var apiReply = GitlabClient.CallApi(ApiRequestType.AssignedToMeMergeRequests).Result;
 
         var mergeRequests = JsonConvert.DeserializeObject<List<MergeRequestInfoUI>>(apiReply);
 
         return mergeRequests;
     }
 
-    public static bool CustomizeNotifications()
+    public static bool CustomizeNotifications(BotUser botUser, int minutes)
     {
+        botUser.NotificationFrequencyMinutes = minutes;
 
         return true;
     }
 
     public static bool SwitchNotifications(BotUser botUser)
     {
-        botUser.AlertsOn = !botUser.AlertsOn;
+        botUser.NotificationEnabled = !botUser.NotificationEnabled;
 
-        return botUser.AlertsOn;
+        return botUser.NotificationEnabled;
     }
 
     public static string GetAboutInfo()

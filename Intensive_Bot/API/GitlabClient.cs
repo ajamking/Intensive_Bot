@@ -3,21 +3,22 @@ using System.Net.Http.Headers;
 
 namespace Intensive_Bot.API;
 
-public static class ApiRequestBuilder
+public static class GitlabClient
 {
-    private static HttpClient _httpClient = new();
+    private static HttpClient _httpClient = new HttpClient();
 
-    private static string _baseUrl = "https://gitlab.com/api/v4";
+    private static string _baseUrl = "";
 
-    private static Dictionary<ApiRequestType, string> _requestStringDic = new()
+    private static Dictionary<ApiRequestType, string> _requestStringDic = new Dictionary<ApiRequestType, string>()
     {
         {ApiRequestType.MyOpenedMergreRequests, "merge_requests?state=opened" },
         {ApiRequestType.AssignedToMeMergeRequests, "merge_requests?scope=assigned_to_me" },
     };
 
-    static ApiRequestBuilder()
+    static GitlabClient()
     {
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Program.BotEnvironment.GitLabAuthToken);
+        _baseUrl = Program.BotEnvironment.GitLabUrl;
     }
 
     public static async Task<string> CallApi(ApiRequestType requestType)
@@ -28,10 +29,8 @@ public static class ApiRequestBuilder
 
         using HttpResponseMessage response = _httpClient.Send(request);
 
-        BadApiResponseException.ThrowByPredicate(() => response.IsSuccessStatusCode == false, 
+        BadApiResponseException.ThrowByPredicate(() => response.IsSuccessStatusCode == false,
             $"Api call failed! RequestString: {response.RequestMessage}; Reason: {response.ReasonPhrase}");
-
-        await Task.Delay(0);
 
         return response.Content.ReadAsStringAsync().Result;
     }

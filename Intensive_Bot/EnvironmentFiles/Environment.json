@@ -1,8 +1,8 @@
 {
-  "BotToken": "",
-  "AdminUsername": "",
-  "AclFilePath": "./EnvironmentFiles/AclFile.json",
+  "BotToken": "7460561130:AAEGBRCazYMjzNrFKxoZKxzWRmIPytMcwKs",
+  "AdminUsername": "godfather98",
   "LogFilePath": "./EnvironmentFiles/LogFile.txt",
   "ExceptionLogFilePath": "./EnvironmentFiles/ExceptionLogFile.txt",
-  "GitLabAuthToken": ""
+  "GitLabAuthToken": "glpat-RiERFtxJzNdzcWSp9xyS",
+  "GitLabUrl": "https://gitlab.com/api/v4"
 }

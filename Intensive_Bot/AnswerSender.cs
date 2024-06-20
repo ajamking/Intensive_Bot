@@ -17,8 +17,8 @@ public static class AnswerSender
     {
         { KeyboardWords.ShowAllMR, "Показать все MR" },
         { KeyboardWords.ShowMyMR, "Показать мои MR" },
-        { KeyboardWords.CustomizeNotification, "Настроить напоминание" },
-        { KeyboardWords.SwitchNotification, "Выключить напоминание" },
+        { KeyboardWords.CustomizeNotification, "Настроить оповещения" },
+        { KeyboardWords.SwitchNotification, "Вкл/Выкл оповещения" },
         { KeyboardWords.AboutInfo, "ℹ️ Справка" },
     };
 
@@ -33,7 +33,7 @@ public static class AnswerSender
         { ResizeKeyboard = true };
     }
 
-    public async static void SendMessage(BotUser botUser, string message, bool isCorrect = true)
+    public async static Task SendMessage(BotUser botUser, string message, bool isCorrect = true)
     {
         try
         {
@@ -63,17 +63,19 @@ public static class AnswerSender
         }
     }
 
-    public async static void ShowKeyboard(BotUser botUser)
+    public async static Task<bool> ShowKeyboard(BotUser botUser)
     {
         try
         {
             await botUser.BotClient.SendTextMessageAsync(botUser.Message.Chat.Id,
-                  text: "Выберите интересующий пункт из меню",
+                  text: "Выберите интересующий пункт из меню или пришлите известную команду...",
                   replyMarkup: _keyboard);
+
+            return true;
         }
         catch
         {
-            return;
+            return false;
         }
     }
 

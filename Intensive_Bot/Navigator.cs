@@ -2,6 +2,7 @@
 using Intensive_Bot.BLFunctions;
 using Intensive_Bot.Entities;
 using Intensive_Bot.EntitiesAndModels;
+using System.Text.RegularExpressions;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 
@@ -9,31 +10,33 @@ namespace Intensive_Bot;
 
 public static class Navigator
 {
-    private static readonly Func<BotUser, bool>[] _handlers = new[]
+    private static readonly Func<BotUser, Task<bool>>[] _handlers = new[]
     {
+        HandleStartMessage,
         HandleKeyboardWordMessage,
+        HandleAdminsAlertsCustomization,
         HandleAnyUnknownMessage,
     };
 
-    public static readonly List<BotUser> BotUsers = new();
+
+
+    public static readonly Dictionary<long, BotUser> BotUsers = new();
 
     public static void Execute(ITelegramBotClient botClient, Message message)
     {
-        TryAddBotUser(botClient, message);
+        var currentBotUser = CheckInUser(botClient, message);
 
-        var activeBotUser = BotUsers.First(x => x.ChatId == message.Chat.Id);
+        ResetUserMessage(currentBotUser, message);
 
-        ResetBotUsersMessage(activeBotUser, message);
-
-        BotLogger.LogRequest(activeBotUser);
+        BotLogger.LogUserMessage(currentBotUser);
 
         foreach (var handler in _handlers)
         {
-            if (handler.Invoke(activeBotUser))
+            if (handler.Invoke(currentBotUser))
             {
-                if (activeBotUser.Username == Program.BotEnvironment.AdminUsername)
+                if (currentBotUser.Username == Program.BotEnvironment.AdminUsername)
                 {
-                    AnswerSender.ShowKeyboard(activeBotUser);
+                    AnswerSender.ShowKeyboard(currentBotUser);
                 }
 
                 break;
@@ -41,7 +44,26 @@ public static class Navigator
         }
     }
 
-    private static bool HandleKeyboardWordMessage(BotUser botUser)
+    private static async Task<bool> HandleStartMessage(BotUser botUser)
+    {
+        if (botUser.Message.Text != "/start")
+        {
+            return false;
+        }
+
+        var answer = BeautyHelper.MakeItStyled($"Приветствую!\n\nЯ - ваш персональный бот. Моя основная задача - упрощение " +
+                         $"мониторинга MergeRequest-ов на GitLab.\n" +
+                         $"\nВы можете проверять обновления своих проектов вручную при помощи клавиатурных кнопок " +
+                         $"<{AnswerSender.KeyboardWordsDic[KeyboardWords.ShowAllMR]}> или {AnswerSender.KeyboardWordsDic[KeyboardWords.ShowMyMR]}>, " +
+                         $"а также настроить периодические оповещения при помощи кнопок " +
+                         $"<{AnswerSender.KeyboardWordsDic[KeyboardWords.CustomizeNotification]}> и <{AnswerSender.KeyboardWordsDic[KeyboardWords.SwitchNotification]}>.\n" +
+                         $"\nВ случае возникновения неполадок в работе бота - обратитесь в службу поддержки.\n" +
+                         $"\np.s. Если вы не администратор бота, то меню вам недоступно и пользоваться функциями бота вы не сможете.", UiTextStyle.Default);
+
+        return await AnswerSender.SendMessage(botUser, answer);
+    }
+
+    private static Task<bool> HandleKeyboardWordMessage(BotUser botUser)
     {
         if (!AnswerSender.KeyboardWordsDic.ContainsValue(botUser.Message.Text))
         {
@@ -74,12 +96,19 @@ public static class Navigator
                     }
                 case var text when text == AnswerSender.KeyboardWordsDic[KeyboardWords.CustomizeNotification]:
                     {
-                        AnswerSender.SendMessage(botUser, "");
+                        var answer = BeautyHelper.MakeItStyled($"Для установки нового интервала оповещений пришлите мне сообщение формата:\n" +
+                            $"H:3, где H - hours (часы), 3 - количество часов, или формата:\n" +
+                            $"m:600, где m - minutes (минуты), 600 - количество минут.", UiTextStyle.Default);
+
+                        AnswerSender.SendMessage(botUser, answer);
+
                         break;
                     }
                 case var text when text == AnswerSender.KeyboardWordsDic[KeyboardWords.SwitchNotification]:
                     {
-                        var answer = BotFunctions.SwitchNotifications(botUser) ? "Регулярные оповещения включены! ✅" : "Регулярные оповещения отключены! 🔴";
+                        var answer = BotFunctions.SwitchNotifications(botUser) ?
+                            BeautyHelper.MakeItStyled("Регулярные оповещения включены! ✅", UiTextStyle.Default) :
+                            BeautyHelper.MakeItStyled("Регулярные оповещения отключены! 🔴", UiTextStyle.Default);
 
                         AnswerSender.SendMessage(botUser, answer);
 
@@ -87,6 +116,16 @@ public static class Navigator
                     }
                 case var text when text == AnswerSender.KeyboardWordsDic[KeyboardWords.AboutInfo]:
                     {
+                        var answer = BeautyHelper.MakeItStyled($"Приветствую!\n\nЯ - ваш персональный бот. Моя основная задача - упрощение " +
+                            $"мониторинга MergeRequest-ов на GitLab.\n" +
+                            $"\nВы можете проверять обновления своих проектов вручную при помощи клавиатурных кнопок " +
+                            $"<{AnswerSender.KeyboardWordsDic[KeyboardWords.ShowAllMR]}> или <{AnswerSender.KeyboardWordsDic[KeyboardWords.ShowMyMR]}>, " +
+                            $"а также настроить периодические оповещения при помощи кнопок " +
+                            $"<{AnswerSender.KeyboardWordsDic[KeyboardWords.CustomizeNotification]}> и <{AnswerSender.KeyboardWordsDic[KeyboardWords.SwitchNotification]}>.\n" +
+                            $"По умолчанию оповещения отключены, а все настройки действуют лишь в рамках одной рабочей сессии.\n" +
+                            $"\nВ случае возникновения неполадок в работе бота - обратитесь в службу поддержки.\n", UiTextStyle.Default);
+
+                        AnswerSender.SendMessage(botUser, answer);
 
                         break;
                     }
@@ -108,24 +147,55 @@ public static class Navigator
         return true;
     }
 
-    private static bool HandleAnyUnknownMessage(BotUser botUser)
+    private static Task<bool> HandleAdminsAlertsCustomization(BotUser botUser)
     {
-        botUser.BotClient.SendTextMessageAsync(botUser.Message.Chat.Id,
-                          text: "Я на этом свете недавно и еще не знаю таких сложных команд 😢");
+        if (_hourRegex.IsMatch(botUser.Message.Text) || _minuteRegex.IsMatch(botUser.Message.Text))
+        {
+            if (_hourRegex.IsMatch(botUser.Message.Text))
+            {
+                BotFunctions.CustomizeNotifications(botUser, int.Parse(Regex.Match(botUser.Message.Text, @"\d+").Value) * 60);
+            }
+            else
+            {
+                BotFunctions.CustomizeNotifications(botUser, int.Parse(Regex.Match(botUser.Message.Text, @"\d+").Value));
+            }
+
+            BotFunctions.SwitchNotifications(botUser);
+
+            var answer = BeautyHelper.MakeItStyled($"Изменения успешно применены!\nТеперь вы будете получать информацию " +
+                $"о новых MergeRequest-ах каждые {botUser.NotificationFrequencyMinutes} минут", UiTextStyle.Default);
+
+            AnswerSender.SendMessage(botUser, answer);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    private static Task<bool> HandleAnyUnknownMessage(BotUser botUser)
+    {
+        AnswerSender.SendMessage(botUser, "Я на этом свете недавно и еще не знаю таких сложных команд 😢");
 
         return true;
     }
 
-    private static void TryAddBotUser(ITelegramBotClient telegramBotClient, Message message)
+    private static BotUser CheckInUser(ITelegramBotClient telegramBotClient, Message message)
     {
-        if (!BotUsers.Any(x => x.ChatId == message.Chat.Id))
+        if (BotUsers.TryGetValue(message.Chat.Id, out var user))
         {
-            BotUsers.Add(new BotUser(telegramBotClient, message));
+            return user;
         }
+
+        var newUser = new BotUser(telegramBotClient, message);
+
+        BotUsers.Add(message.Chat.Id, newUser);
+
+        return newUser;
     }
 
-    private static void ResetBotUsersMessage(BotUser activeBotUser, Message message)
+    private static void ResetUserMessage(BotUser currentBotUser, Message message)
     {
-        activeBotUser.Message = message;
+        currentBotUser.Message = message;
     }
 }
