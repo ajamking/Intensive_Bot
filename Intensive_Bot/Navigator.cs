@@ -1,5 +1,6 @@
 ﻿using Exceptions;
 using Intensive_Bot.BLFunctions;
+using Intensive_Bot.Commands;
 using Intensive_Bot.Entities;
 using Intensive_Bot.EntitiesAndModels;
 using System.Text.RegularExpressions;
@@ -10,6 +11,8 @@ namespace Intensive_Bot;
 
 public static class Navigator
 {
+    private static List<BaseCommand> _commands = AllCommandsConstructor.AllCommands;
+
     private static readonly Func<BotUser, Task<bool>>[] _handlers = new[]
     {
         HandleStartMessage,
@@ -17,8 +20,6 @@ public static class Navigator
         HandleAdminsAlertsCustomization,
         HandleAnyUnknownMessage,
     };
-
-
 
     public static readonly Dictionary<long, BotUser> BotUsers = new();
 
@@ -32,7 +33,7 @@ public static class Navigator
 
         foreach (var handler in _handlers)
         {
-            if (handler.Invoke(currentBotUser))
+            if (handler.Invoke(currentBotUser).Result)
             {
                 if (currentBotUser.Username == Program.BotEnvironment.AdminUsername)
                 {
@@ -51,16 +52,13 @@ public static class Navigator
             return false;
         }
 
-        var answer = BeautyHelper.MakeItStyled($"Приветствую!\n\nЯ - ваш персональный бот. Моя основная задача - упрощение " +
-                         $"мониторинга MergeRequest-ов на GitLab.\n" +
-                         $"\nВы можете проверять обновления своих проектов вручную при помощи клавиатурных кнопок " +
-                         $"<{AnswerSender.KeyboardWordsDic[KeyboardWords.ShowAllMR]}> или {AnswerSender.KeyboardWordsDic[KeyboardWords.ShowMyMR]}>, " +
-                         $"а также настроить периодические оповещения при помощи кнопок " +
-                         $"<{AnswerSender.KeyboardWordsDic[KeyboardWords.CustomizeNotification]}> и <{AnswerSender.KeyboardWordsDic[KeyboardWords.SwitchNotification]}>.\n" +
-                         $"\nВ случае возникновения неполадок в работе бота - обратитесь в службу поддержки.\n" +
-                         $"\np.s. Если вы не администратор бота, то меню вам недоступно и пользоваться функциями бота вы не сможете.", UiTextStyle.Default);
-
-        return await AnswerSender.SendMessage(botUser, answer);
+        foreach (var command in _commands)
+        {
+            if (command.CanProcessCommand(botUser.Message.Text))
+            {
+               await command.Execute(botUser);
+            }
+        }
     }
 
     private static Task<bool> HandleKeyboardWordMessage(BotUser botUser)
