@@ -1,7 +1,7 @@
 ﻿using Intensive_Bot.EntitiesAndModels;
 using System.Text;
 
-namespace Intensive_Bot.BLFunctions;
+namespace Intensive_Bot.Functions;
 
 public static class BeautyHelper
 {

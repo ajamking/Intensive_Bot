@@ -10,15 +10,7 @@ public class BadApiResponseException : Exception
         }
     }
 
-    public BadApiResponseException()
-    {
-    }
-
     public BadApiResponseException(string message) : base(message)
-    {
-    }
-
-    public BadApiResponseException(string message, Exception innerException) : base(message, innerException)
     {
     }
 }

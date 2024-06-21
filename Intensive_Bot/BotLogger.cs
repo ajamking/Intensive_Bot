@@ -1,4 +1,4 @@
-﻿using Intensive_Bot.Entities;
+﻿using Intensive_Bot.EntitiesAndModels;
 using Serilog;
 using Serilog.Events;
 using System.Text;

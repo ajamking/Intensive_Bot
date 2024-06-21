@@ -1,4 +1,4 @@
-﻿namespace Intensive_Bot.Entities;
+﻿namespace Intensive_Bot.EntitiesAndModels;
 
 public class BotEnvironment
 {

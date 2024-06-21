@@ -1,10 +1,9 @@
-﻿using Intensive_Bot.Entities;
-using Intensive_Bot.EntitiesAndModels;
+﻿using Intensive_Bot.EntitiesAndModels;
 using System.Net.NetworkInformation;
 using System.Text;
 using Telegram.Bot;
 
-namespace Intensive_Bot.BLFunctions;
+namespace Intensive_Bot.Functions;
 
 public static class BotBackgroundManager
 {
@@ -14,15 +13,15 @@ public static class BotBackgroundManager
     {
         try
         {
-           await RunAdminsBgTasks(botClient);
+            await RunAdminsTasks(botClient);
         }
         catch (Exception ex)
         {
-            BotLogger.LogException(ex, "Из-за ошибки фоновые задачи были остановлены.");
+            ex.LogException("Из-за ошибки фоновые задачи были остановлены.");
         }
     }
 
-    private static async Task RunAdminsBgTasks(ITelegramBotClient botClient)
+    private static async Task RunAdminsTasks(ITelegramBotClient botClient)
     {
         while (true)
         {

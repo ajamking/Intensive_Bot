@@ -1,12 +1,14 @@
-﻿using Intensive_Bot.BLFunctions;
-using Intensive_Bot.Entities;
+﻿using Intensive_Bot.BotCommands.Commands;
 using Intensive_Bot.EntitiesAndModels;
+using Intensive_Bot.Functions;
 
-namespace Intensive_Bot.Commands;
+namespace Intensive_Bot.BotCommands;
 
-internal sealed class DisplayAllMergeRequestsCommand : BaseCommand
+internal sealed class DisplayAllMergeRequestsCommand : NamedCommand
 {
-    public string CommandType => "Показать все MR";
+    public override string CommandName => "Показать все MR";
+
+    public override CommandType CommandType => CommandType.ShowAllMR;
 
     public override Task Execute(BotUser botUser)
     {

@@ -1,12 +1,14 @@
-﻿using Intensive_Bot.BLFunctions;
-using Intensive_Bot.Entities;
+﻿using Intensive_Bot.BotCommands.Commands;
 using Intensive_Bot.EntitiesAndModels;
+using Intensive_Bot.Functions;
 
-namespace Intensive_Bot.Commands;
+namespace Intensive_Bot.BotCommands;
 
-internal sealed class DisplaySwitchMergeRequestsNotificationCommand : BaseCommand
+internal sealed class SwitchMergeRequestsNotificationCommand : NamedCommand
 {
-    public string CommandType => "Вкл/Выкл оповещения";
+    public override string CommandName => "Вкл/Выкл оповещения";
+
+    public override CommandType CommandType => CommandType.SwitchNotification;
 
     public override Task Execute(BotUser botUser)
     {

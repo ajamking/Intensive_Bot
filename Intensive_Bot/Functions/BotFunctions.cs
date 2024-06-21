@@ -1,9 +1,8 @@
 ﻿using Intensive_Bot.API;
-using Intensive_Bot.Entities;
 using Intensive_Bot.EntitiesAndModels;
 using Newtonsoft.Json;
 
-namespace Intensive_Bot.BLFunctions;
+namespace Intensive_Bot.Functions;
 
 public static class BotFunctions
 {

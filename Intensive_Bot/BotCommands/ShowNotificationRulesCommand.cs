@@ -1,12 +1,14 @@
-﻿using Intensive_Bot.BLFunctions;
-using Intensive_Bot.Entities;
+﻿using Intensive_Bot.BotCommands.Commands;
 using Intensive_Bot.EntitiesAndModels;
+using Intensive_Bot.Functions;
 
-namespace Intensive_Bot.Commands;
+namespace Intensive_Bot.BotCommands;
 
-internal sealed class DisplayNotificationInfoCommand : BaseCommand
+internal sealed class ShowNotificationRulesCommand : NamedCommand
 {
-    public string CommandType => "Настроить оповещения";
+    public override string CommandName => "Настроить оповещения";
+
+    public override CommandType CommandType => CommandType.CustomizeNotification;
 
     public override Task Execute(BotUser botUser)
     {

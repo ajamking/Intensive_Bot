@@ -1,16 +1,12 @@
-﻿using System.Globalization;
-using System.Text;
+﻿using Exceptions;
+using Intensive_Bot.EntitiesAndModels;
+using Intensive_Bot.Functions;
+using Microsoft.Extensions.Hosting;
+using Newtonsoft.Json;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
-using Newtonsoft.Json;
-using Intensive_Bot.Entities;
-using Microsoft.Extensions.Hosting;
-using Intensive_Bot.API;
-using Intensive_Bot.BLFunctions;
-using Intensive_Bot.EntitiesAndModels;
-using Exceptions;
 
 namespace Intensive_Bot;
 

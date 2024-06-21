@@ -1,7 +1,7 @@
 ﻿using Telegram.Bot.Types;
 using Telegram.Bot;
 
-namespace Intensive_Bot.Entities;
+namespace Intensive_Bot.EntitiesAndModels;
 
 public class BotUser
 {

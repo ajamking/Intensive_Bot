@@ -1,18 +1,16 @@
-﻿using Intensive_Bot.BLFunctions;
-using Intensive_Bot.Entities;
+﻿using Intensive_Bot.BotCommands.Commands;
 using Intensive_Bot.EntitiesAndModels;
+using Intensive_Bot.Functions;
 using System.Text.RegularExpressions;
 
-namespace Intensive_Bot.Commands;
+namespace Intensive_Bot.BotCommands;
 
-internal sealed class DisplayNotificationChangedInfoCommand : BaseCommand
+internal sealed class SwitchNotificationSetupCommand : DynamicCommand
 {
     private static readonly Regex _hourRegex = new Regex(@"H:([0-9]+)");
     private static readonly Regex _minuteRegex = new Regex(@"m:([0-9]+)");
 
-    public string CommandType => "";
-
-    public override bool CanProcessCommand(string command)
+    public override bool CanExecute(string command)
         => _hourRegex.IsMatch(command) || _minuteRegex.IsMatch(command);
 
     public override Task Execute(BotUser botUser)

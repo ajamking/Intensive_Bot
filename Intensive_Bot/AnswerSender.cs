@@ -1,6 +1,7 @@
 ﻿using Exceptions;
-using Intensive_Bot.BLFunctions;
-using Intensive_Bot.Entities;
+using Intensive_Bot.BotCommands.Commands;
+using Intensive_Bot.EntitiesAndModels;
+using Intensive_Bot.Functions;
 using Telegram.Bot;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
@@ -13,22 +14,13 @@ public static class AnswerSender
 
     private static int _maxMessageLength = 4000;
 
-    public static Dictionary<KeyboardWords, string> KeyboardWordsDic { get; private set; } = new()
-    {
-        { KeyboardWords.ShowAllMR, "Показать все MR" },
-        { KeyboardWords.ShowMyMR, "Показать мои MR" },
-        { KeyboardWords.CustomizeNotification, "Настроить оповещения" },
-        { KeyboardWords.SwitchNotification, "Вкл/Выкл оповещения" },
-        { KeyboardWords.AboutInfo, "ℹ️ Справка" },
-    };
-
     static AnswerSender()
     {
         _keyboard = new(new[]
         {
-        new KeyboardButton[] { KeyboardWordsDic[KeyboardWords.ShowAllMR], KeyboardWordsDic[KeyboardWords.ShowMyMR], },
-        new KeyboardButton[] { KeyboardWordsDic[KeyboardWords.CustomizeNotification], KeyboardWordsDic[KeyboardWords.SwitchNotification], },
-        new KeyboardButton[] { KeyboardWordsDic[KeyboardWords.AboutInfo], },
+        new KeyboardButton[] { CommandsManager.NamedCommandsDic[CommandType.ShowAllMR], CommandsManager.NamedCommandsDic[CommandType.ShowMyMR], },
+        new KeyboardButton[] { CommandsManager.NamedCommandsDic[CommandType.CustomizeNotification], CommandsManager.NamedCommandsDic[CommandType.SwitchNotification] },
+        new KeyboardButton[] { CommandsManager.NamedCommandsDic[CommandType.AboutInfo], },
         })
         { ResizeKeyboard = true };
     }
@@ -80,13 +72,4 @@ public static class AnswerSender
     }
 
     private static bool CheckMessageHaveValidLength(string message) => message.Length > _maxMessageLength ? false : true;
-}
-
-public enum KeyboardWords
-{
-    ShowAllMR,
-    ShowMyMR,
-    CustomizeNotification,
-    SwitchNotification,
-    AboutInfo
 }

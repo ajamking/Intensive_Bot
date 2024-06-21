@@ -10,10 +10,6 @@ public class BadMarkdownSyntaxException : Exception
         }
     }
 
-    public BadMarkdownSyntaxException()
-    {
-    }
-
     public BadMarkdownSyntaxException(string message) : base(message)
     {
     }
